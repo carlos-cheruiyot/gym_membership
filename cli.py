@@ -1,6 +1,6 @@
 from datetime import datetime
 from models import Member, WorkoutSession
-from db_setup import get_session
+from database import get_session
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy import select
 
