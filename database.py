@@ -1,5 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from contextlib import contextmanager
 from models import Base
 
 
@@ -12,17 +13,26 @@ engine = create_engine(DATABASE_URL, echo=False, future=True)
 Base.metadata.create_all(engine)
 
 #creating the session factory
-SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
 
 
+@contextmanager
 def get_session():
-    with get_session() as session:
-        session = SessionLocal()
-        try:
-            yield session
-            session.commit()
-        except Exception:
-            session.rollback()
-            raise
-        finally:
-            session.close()
+    """
+    Provide a transactional scope around a series of operations,
+    using context management for safe commit/rollback/close.
+    
+    Usage:
+        with get_session() as session:
+            # perform database operations with session
+    """
+    session = SessionLocal()
+    try:
+        yield session
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
